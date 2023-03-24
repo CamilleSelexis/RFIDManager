@@ -135,6 +135,7 @@ void loop()
         byte data[5];
         byte index;
         data[0] = client.read();
+        //SSR CONTROL ----------------------------------------------------------------------------------------
         if(data[0] == 'P'){ //Check that first letter is P for PCF -> PXE or PXD PCF 1 Enable or PCF 1 Disable
           //Command for the PCF8575
           if(pcf){//Check that a pcf8575 is connected to the I2C bus
@@ -170,6 +171,44 @@ void loop()
             client.flush();
             client.stop();
           }
+        }
+        //SSR CONTROL Done----------------------------------------------------------------------------------------
+        //Fake RFID Reading
+        if(data[0] == 'N'){
+          data[1] = client.read();
+          data[2] = client.read();
+          data[3] = client.read();
+          Serial.print("Received ");
+          for(int i = 0;i<5;i++){
+            Serial.print(data[i]);
+          }
+          Serial.println("");
+          byte index = (data[2]-'0')*10 + data[3]-'0';
+          char return_data[10] = "SLX01-";
+          if(data[1] == 'R'){ //Reading
+            //return_data = "SLX01-NR ";
+            return_data[8]= data[2];
+            return_data[9]= data[3];
+            client.write(return_data,10);
+//            client.write(data,4);
+            client.print("EOT");
+            Serial.println("Reading RFID");
+          }
+          else if (data[1] == 'W'){ //Writing
+            //return_data = "SLX01-WR ";
+            return_data[8]= data[2];
+            return_data[9]= data[3];
+            client.write(return_data,10);
+            //client.write(data,4);
+            client.print("EOT");
+            Serial.println("Writing RFID");
+          }
+          else{
+            client.print("EOT");
+          }
+          Serial.println("Fake RFID Reading/Writing");
+          client.flush();
+          client.stop();
         }
         else if(data[0] == 'R'){ //Check that the first letter = B for boot
           //Reset the portenta

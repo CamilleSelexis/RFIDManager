@@ -174,7 +174,7 @@ void loop()
         }
         //SSR CONTROL Done----------------------------------------------------------------------------------------
         //Fake RFID Reading
-        if(data[0] == 'N'){
+        if(data[0] == 'N'){ //N for NFC
           data[1] = client.read();
           data[2] = client.read();
           data[3] = client.read();
@@ -185,11 +185,15 @@ void loop()
           Serial.println("");
           byte index = (data[2]-'0')*10 + data[3]-'0';
           char return_data[10] = "SLX01-";
+          String ret_data = "SLX01-XXXXXXX";
+          if (random(10)<7){
+            ret_data = "EmptySlotXXXX";
+          }
           if(data[1] == 'R'){ //Reading
-            //return_data = "SLX01-NR ";
-            return_data[8]= data[2];
-            return_data[9]= data[3];
-            client.write(return_data,10);
+            ret_data[8]= data[2]+48;
+            ret_data[9]= data[3]+48;
+            //client.write(return_data,10);
+            client.print(ret_data);
 //            client.write(data,4);
             client.print("EOT");
             Serial.println("Reading RFID");
